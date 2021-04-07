@@ -1,5 +1,4 @@
 # mortgage-calculator
-I made this mortgage calculator and trying to find the best way of representing data. What is yor thought on this? Should I use d3.js or canvas and what is the best diagram?
 
 ## Project setup
 ```
