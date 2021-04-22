@@ -10,14 +10,17 @@
               <strong>Home price</strong>
             </label>
           </div>
-          <input
-            type="number"
-            name="homePrice"
-            id="homePrice"
-            placeholder="purchase price"
-            v-model.number="homePrice"
-            required
-          />
+          <span class="input-symbol-dollar">
+            <input
+              type="number"
+              name="homePrice"
+              id="homePrice"
+              placeholder="purchase price"
+              v-model.number="homePrice"
+              step="1000"
+              required
+            />
+          </span>
         </div>
         <div v-if="!validHomePrice" class="warning">Please enter a valid home price greater than 0.</div>
         <div>
@@ -26,18 +29,25 @@
               <strong>Down payment</strong>
             </label>
           </div>
-          <input
-            type="number"
-            name="downPayment"
-            id="downPayment"
-            placeholder="down payment"
-            v-model.number="downPayment"
-            required
-          />
+          <span class="input-symbol-dollar">
+            <input
+              type="number"
+              name="downPayment"
+              id="downPayment"
+              placeholder="down payment"
+              v-model.number="downPayment"
+              step="1000"
+              required
+            />
+          </span>
         </div>
         <div v-if="!validDownPayment" class="warning">
           <p>Please enter a valid down payment greater than or equal to 0.</p>
-          <p>Most lenders require at least 3.5 percent of the home price.</p>
+          <p>Most lenders require at least 3.5% of the home price.</p>
+        </div>
+        <div v-if="!validDownPayment2" class="warning">
+          <p>Please enter a down payment less than home price.</p>
+          <p>No one wants to pay more than what they have to right?</p>
         </div>
         <div>
           <div>
@@ -63,15 +73,17 @@
               <strong>Interest rate</strong>
             </label>
           </div>
-          <input
-            type="number"
-            name="interestRate"
-            id="interestRate"
-            placeholder="interest rate in percentage"
-            v-model="interestRate"
-            step="any"
-            required
-          />
+          <span class="input-rate">
+            <input
+              type="number"
+              name="interestRate"
+              id="interestRate"
+              placeholder="interest rate in percentage"
+              v-model="interestRate"
+              step="0.01"
+              required
+            />
+          </span>
         </div>
         <div
           v-if="!validInterestRate"
@@ -83,15 +95,17 @@
               <strong>Property tax rate</strong>
             </label>
           </div>
-          <input
-            type="number"
-            name="taxRate"
-            id="taxRate"
-            placeholder="tax rate"
-            v-model="taxRate"
-            step="any"
-            required
-          />
+          <span class="input-rate">
+            <input
+              type="number"
+              name="taxRate"
+              id="taxRate"
+              placeholder="tax rate"
+              v-model="taxRate"
+              step="0.01"
+              required
+            />
+          </span>
         </div>
         <div
           v-if="!validTaxRate"
@@ -103,13 +117,16 @@
               <strong>Home insurance</strong>
             </label>
           </div>
-          <input
-            type="number"
-            name="homeInurance"
-            id="homeInsurance"
-            placeholder="insurance"
-            v-model.number="homeInsurance"
-          />
+          <span class="input-symbol-dollar input-home-insurance">
+            <input
+              type="number"
+              name="homeInurance"
+              id="homeInsurance"
+              placeholder="insurance"
+              v-model.number="homeInsurance"
+              step="50"
+            />
+          </span>
         </div>
         <div
           v-if="!validHomeInsurance"
@@ -121,7 +138,16 @@
               <strong>HOA</strong>
             </label>
           </div>
-          <input type="number" name="HOA" id="HOA" placeholder="HOA" v-model.number="HOA" />
+          <span class="input-symbol-dollar input-HOA">
+            <input
+              type="number"
+              name="HOA"
+              id="HOA"
+              placeholder="HOA"
+              v-model.number="HOA"
+              step="5"
+            />
+          </span>
         </div>
         <div v-if="!validHOA" class="warning">Please enter a valid HOA greater than or equal to 0.</div>
       </form>
@@ -134,6 +160,7 @@
         <p>Taxes: ${{Math.round(dataObj.taxes/12)}}</p>
         <p>HOA: ${{ Math.round(dataObj.HOA) ? Math.round(dataObj.HOA) : 0 }}</p>
         <p>Insurance: ${{Math.round(dataObj.insurance/12)}}</p>
+        <p>Estimated PMI: ${{Math.round(dataObj.PMI) ? Math.round(dataObj.PMI) : 0}}</p>
       </div>
     </div>
   </div>
@@ -150,21 +177,24 @@ export default {
       interestRate: 3.0,
       i: this.interestRate / 1200,
       n: this.loanProgram * 12,
-      taxRate: 3,
+      taxRate: 3.0,
       propertyTax: null,
       homeInsurance: 500,
-      HOA: 42,
+      HOA: 50,
       principalAndInterest: null,
       monthlyPayment: null,
+      PMI: null,
       dataObj: {
         principalAndInterest: this.principalAndInterest,
         monthlyPayment: this.monthlyPayment,
         taxes: this.propertyTax,
-        hoa: this.hoa,
-        insurance: this.homeInsurance
+        HOA: this.HOA,
+        insurance: this.homeInsurance,
+        PMI: this.PMI
       },
       validHomePrice: true,
       validDownPayment: true,
+      validDownPayment2: true,
       validInterestRate: true,
       validTaxRate: true,
       validHomeInsurance: true,
@@ -178,6 +208,10 @@ export default {
     calculate() {
       if (this.homePrice <= 0) {
         this.validHomePrice = false;
+      }
+
+      if (this.downPayment > this.homePrice) {
+        this.validDownPayment2 = false;
       }
 
       if (this.downPayment < 0) {
@@ -204,17 +238,10 @@ export default {
         this.validHOA = false;
       }
 
-      if (
-        this.homePrice > 0 &&
-        this.downPayment > 0 &&
-        this.interestRate >= 0 &&
-        this.taxRate >= 0 &&
-        this.homeInsurance >= 0 &&
-        this.HOA >= 0 &&
-        this.HOA !== ""
-      ) {
+      if (this.checkFields) {
         this.validHomePrice = true;
         this.validDownPayment = true;
+        this.validDownPayment2 = true;
         this.validInterestRate = true;
         this.validTaxRate = true;
         this.validHomeInsurance = true;
@@ -248,20 +275,46 @@ export default {
         this.dataObj.taxes = 0;
         this.dataObj.HOA = 0;
         this.dataObj.insurance = 0;
+        this.dataObj.PMI = 0;
       }
+    },
+    calcPMI() {
+      if (this.checkPMI && this.checkFields) {
+        this.dataObj.PMI = (this.homePrice - this.downPayment) / 2000;
+      } else {
+        this.dataObj.PMI = 0;
+      }
+    }
+  },
+  computed: {
+    checkPMI() {
+      return this.downPayment < 0.2 * this.homePrice;
+    },
+    checkFields() {
+      return (
+        this.homePrice > 0 &&
+        this.downPayment > 0 &&
+        this.downPayment < this.homePrice &&
+        this.interestRate >= 0 &&
+        this.taxRate >= 0 &&
+        this.homeInsurance >= 0 &&
+        this.HOA >= 0 &&
+        this.HOA !== ""
+      );
     }
   },
   mounted() {
     this.calculate();
+    this.calcPMI();
   },
   updated() {
     this.calculate();
+    this.calcPMI();
   }
 };
 </script>
 
 <style scoped>
-
 p {
   font-size: 1rem;
 }
@@ -301,7 +354,8 @@ div {
   flex-direction: row;
 }
 
-input, select {
+input,
+select {
   border-radius: 6px;
   font-size: 1rem;
   padding: 0.4rem 0.4rem;
@@ -315,5 +369,69 @@ h1 {
 
 .dataviz p {
   font-weight: bolder;
+}
+
+.input-symbol-dollar {
+  position: relative;
+}
+
+.input-symbol-dollar input {
+  padding-left: 18px;
+}
+
+.input-symbol-dollar:before {
+  position: absolute;
+  top: 0;
+  content: "$";
+  left: 5px;
+  font-weight: bolder;
+}
+
+.input-home-insurance {
+  position: relative;
+}
+
+.input-home-insurance input {
+  padding-left: 18px;
+}
+
+.input-home-insurance:after {
+  position: absolute;
+  top: 0;
+  content: "/year";
+  right: 25px;
+  font-weight: lighter;
+}
+
+.input-HOA {
+  position: relative;
+}
+
+.input-HOA input {
+  padding-left: 18px;
+}
+
+.input-HOA:after {
+  position: absolute;
+  top: 0;
+  content: "/month";
+  right: 25px;
+  font-weight: lighter;
+}
+
+.input-rate {
+  position: relative;
+}
+
+.input-rate input {
+  padding-left: 10px;
+}
+
+.input-rate:after {
+  position: absolute;
+  top: 0;
+  content: "%";
+  right: 20px;
+  font-weight: lighter;
 }
 </style>

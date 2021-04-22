@@ -46,7 +46,7 @@ export default {
 
 html {
   font-family: "Quicksand", sans-serif;
-  min-width: 50rem;
+  min-width: 100rem;
 }
 
 body {
